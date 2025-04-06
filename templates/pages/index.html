@@ -216,6 +216,60 @@
         </div>
       </div>
       {% endif %}
+      
+      {% if asia_markets %}
+      <h2>Financial Markets</h2>
+      
+      <!-- IHSG Section with most prominence -->
+      <div class="trend-item" style="margin-bottom: 30px;">
+        <h3 style="text-align: center;">Indonesia Stock Exchange (IHSG)</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+          <div style="flex: 1; min-width: 300px;">
+            <h4>{{ ihsg_data.shortName }}</h4>
+            <p style="font-size: 1.2em;">Price: <strong>{{ ihsg_data.regularMarketPrice }}</strong></p>
+            {% if ihsg_data.regularMarketChangePercent > 0 %}
+            <p style="color: green; font-size: 1.1em;">
+              Change: +{{ ihsg_data.regularMarketChange|round(2) }} (+{{ ihsg_data.regularMarketChangePercent|round(2) }}%)
+            </p>
+            {% else %}
+            <p style="color: red; font-size: 1.1em;">
+              Change: {{ ihsg_data.regularMarketChange|round(2) }} ({{ ihsg_data.regularMarketChangePercent|round(2) }}%)
+            </p>
+            {% endif %}
+          </div>
+          <div style="flex: 1; min-width: 300px;">
+            <p>Previous Close: {{ ihsg_data.previousClose }}</p>
+            <p>Day Range: {{ ihsg_data.dayLow }} - {{ ihsg_data.dayHigh }}</p>
+            <p>52 Week Range: {{ ihsg_data.fiftyTwoWeekRange }}</p>
+            {% if ihsg_data.averageVolume %}
+            <p>Average Volume: {{ ihsg_data.averageVolume }}</p>
+            {% endif %}
+            <p>Exchange: {{ ihsg_data.exchange }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Asian Markets in 2 rows, 3 items per row -->
+      <h3>Asian Markets</h3>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
+        {% for market_key, market_data in asia_markets.items() %}
+        <div class="trend-item">
+          <h4>{{ market_data.shortName }}</h4>
+          <p>{{ market_data.regularMarketPrice }}</p>
+          {% if market_data.regularMarketChangePercent > 0 %}
+          <p style="color: green">
+            +{{ market_data.regularMarketChange|round(2) }} (+{{ market_data.regularMarketChangePercent|round(2) }}%)
+          </p>
+          {% else %}
+          <p style="color: red">
+            {{ market_data.regularMarketChange|round(2) }} ({{ market_data.regularMarketChangePercent|round(2) }}%)
+          </p>
+          {% endif %}
+          <p>{{ market_data.fullExchangeName }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
   </body>
 </html>
