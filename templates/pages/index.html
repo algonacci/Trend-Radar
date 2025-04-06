@@ -147,6 +147,38 @@
           {% endfor %}
         </div>
       </div>
+      
+      {% if topic_news %}
+      {% for topic_name, topic_articles in topic_news.items() %}
+      <h3>{{ topic_name }} News</h3>
+      <div class="grid-2-columns">
+        <div>
+          {% for news in topic_articles[:5] %}
+          <div class="news-item">
+            <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+              {{ news.title }}
+            </a>
+            {% if news.publisher %}
+            <small>({{ news.publisher }})</small>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div>
+          {% for news in topic_articles[5:] %}
+          <div class="news-item">
+            <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+              {{ news.title }}
+            </a>
+            {% if news.publisher %}
+            <small>({{ news.publisher }})</small>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
       {% endif %} {% if google_trends %}
       <h2>Google Trends Indonesia</h2>
       <div class="grid-2-columns">
