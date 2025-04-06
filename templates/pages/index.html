@@ -923,6 +923,137 @@
       {% endif %}
       {% endif %}
       
+      <!-- Hacker News Section -->
+      {% if hn_hot_stories or hn_rising_stories or hn_new_stories %}
+      <h2>Hacker News</h2>
+      
+      <!-- All Hacker News Stories (16 teratas) -->
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 40px;
+        "
+      >
+        <!-- Kolom Kiri -->
+        <div>
+          {% set all_stories = (hn_hot_stories + hn_rising_stories + hn_new_stories)[:16] %}
+          {% for story in all_stories[:8] %}
+          <div
+            class="trend-item"
+            style="margin-bottom: 15px; display: flex; flex-direction: column"
+          >
+            <div>
+              <h4 style="margin-top: 0; margin-bottom: 10px">
+                <a
+                  href="{{ story.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ story.title }}
+                </a>
+              </h4>
+  
+              <div style="margin-bottom: 8px">
+                <span style="font-size: 0.9em; color: #666"
+                  >Points: {{ story.points }}</span
+                >
+                <span style="font-size: 0.9em; color: #666; margin-left: 10px"
+                  >{% if story.discussion_url %}
+                    <a href="{{ story.discussion_url }}" target="_blank" rel="noopener noreferrer">Comments: {{ story.num_comments }}</a>
+                  {% else %}
+                    Comments: {{ story.num_comments }}
+                  {% endif %}</span
+                >
+              </div>
+  
+              <p style="font-size: 0.9em; margin-bottom: 10px">
+                <strong>By:</strong> {{ story.by }} • {{ story.time_ago }}
+              </p>
+            </div>
+  
+            {% if story.domain %}
+            <div style="margin-top: 5px">
+              <span
+                style="
+                  font-size: 0.8em;
+                  background-color: #e0f2fe;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  margin-right: 5px;
+                  display: inline-block;
+                  margin-bottom: 5px;
+                "
+              >
+                {{ story.domain }}
+              </span>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        
+        <!-- Kolom Kanan -->
+        <div>
+          {% set all_stories = (hn_hot_stories + hn_rising_stories + hn_new_stories)[:16] %}
+          {% for story in all_stories[8:16] %}
+          <div
+            class="trend-item"
+            style="margin-bottom: 15px; display: flex; flex-direction: column"
+          >
+            <div>
+              <h4 style="margin-top: 0; margin-bottom: 10px">
+                <a
+                  href="{{ story.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ story.title }}
+                </a>
+              </h4>
+  
+              <div style="margin-bottom: 8px">
+                <span style="font-size: 0.9em; color: #666"
+                  >Points: {{ story.points }}</span
+                >
+                <span style="font-size: 0.9em; color: #666; margin-left: 10px"
+                  >{% if story.discussion_url %}
+                    <a href="{{ story.discussion_url }}" target="_blank" rel="noopener noreferrer">Comments: {{ story.num_comments }}</a>
+                  {% else %}
+                    Comments: {{ story.num_comments }}
+                  {% endif %}</span
+                >
+              </div>
+  
+              <p style="font-size: 0.9em; margin-bottom: 10px">
+                <strong>By:</strong> {{ story.by }} • {{ story.time_ago }}
+              </p>
+            </div>
+  
+            {% if story.domain %}
+            <div style="margin-top: 5px">
+              <span
+                style="
+                  font-size: 0.8em;
+                  background-color: #e0f2fe;
+                  padding: 2px 6px;
+                  border-radius: 4px;
+                  margin-right: 5px;
+                  display: inline-block;
+                  margin-bottom: 5px;
+                "
+              >
+                {{ story.domain }}
+              </span>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      
     </div>
   </body>
 </html>

@@ -12,6 +12,7 @@ from huggingface_trends import (
     get_daily_papers,
 )
 from arxiv_papers import get_trending_arxiv_papers
+from hacker_news import get_hot_hn_stories, get_rising_hn_stories, get_new_hn_stories, get_hn_insights, format_story
 import threading
 import time
 import os
@@ -165,6 +166,50 @@ def cached_arxiv_new_papers():
         return []
 
 
+# Cache Hacker News stories with different sorting methods
+@cache.cached(timeout=1800, key_prefix="hn_hot_stories")
+def cached_hn_hot_stories():
+    print("Fetching fresh Hacker News HOT stories")
+    try:
+        stories_with_scores = get_hot_hn_stories(10)
+        return [format_story(story, score) for story, score in stories_with_scores]
+    except Exception as e:
+        print(f"Error fetching Hacker News hot stories: {e}")
+        return []
+
+
+@cache.cached(timeout=1800, key_prefix="hn_rising_stories")
+def cached_hn_rising_stories():
+    print("Fetching fresh Hacker News RISING stories")
+    try:
+        stories_with_scores = get_rising_hn_stories(10)
+        return [format_story(story, score) for story, score in stories_with_scores]
+    except Exception as e:
+        print(f"Error fetching Hacker News rising stories: {e}")
+        return []
+
+
+@cache.cached(timeout=1800, key_prefix="hn_new_stories")
+def cached_hn_new_stories():
+    print("Fetching fresh Hacker News NEW stories")
+    try:
+        stories_with_scores = get_new_hn_stories(10)
+        return [format_story(story, score) for story, score in stories_with_scores]
+    except Exception as e:
+        print(f"Error fetching Hacker News new stories: {e}")
+        return []
+
+
+@cache.cached(timeout=3600, key_prefix="hn_insights")
+def cached_hn_insights():
+    print("Fetching fresh Hacker News insights")
+    try:
+        return get_hn_insights()
+    except Exception as e:
+        print(f"Error fetching Hacker News insights: {e}")
+        return {}
+
+
 # Thread untuk mengupdate cache di background
 def update_cache_in_background():
     while True:
@@ -185,6 +230,11 @@ def update_cache_in_background():
             cached_arxiv_hot_papers()
             cached_arxiv_rising_papers()
             cached_arxiv_new_papers()
+            # Update Hacker News cache
+            cached_hn_hot_stories()
+            cached_hn_rising_stories()
+            cached_hn_new_stories()
+            cached_hn_insights()
             print("Background thread: cache update complete")
         except Exception as e:
             print(f"Error in background cache update: {e}")
@@ -266,6 +316,55 @@ def index():
         arxiv_new_papers = cached_arxiv_new_papers()
     except Exception:
         arxiv_new_papers = []
+        
+    # Ambil data Hacker News dengan fallback
+    try:
+        hn_hot_stories = cached_hn_hot_stories()
+    except Exception:
+        hn_hot_stories = []
+        
+    try:
+        hn_rising_stories = cached_hn_rising_stories()
+    except Exception:
+        hn_rising_stories = []
+        
+    try:
+        hn_new_stories = cached_hn_new_stories()
+    except Exception:
+        hn_new_stories = []
+    
+    # Menghapus insights karena sudah tidak digunakan
+    hn_insights = {}
+    
+    # Menggabungkan semua cerita Hacker News dan menghapus duplikat berdasarkan judul
+    all_hn_stories = []
+    seen_titles = set()
+    
+    # Fungsi untuk tambahkan cerita ke daftar gabungan jika judulnya belum ada
+    def add_unique_story(story):
+        title = story.get('title', '')
+        if title and title not in seen_titles:
+            seen_titles.add(title)
+            all_hn_stories.append(story)
+    
+    # Tambahkan cerita dari masing-masing kategori
+    for story in hn_hot_stories:
+        add_unique_story(story)
+    
+    for story in hn_rising_stories:
+        add_unique_story(story)
+    
+    for story in hn_new_stories:
+        add_unique_story(story)
+    
+    # Urutkan berdasarkan skor (dari tertinggi ke terendah) dan ambil 16 teratas
+    all_hn_stories.sort(key=lambda x: x.get('score', 0), reverse=True)
+    all_hn_stories = all_hn_stories[:16]
+    
+    # Hapus array terpisah karena sudah digabungkan
+    hn_hot_stories = all_hn_stories
+    hn_rising_stories = []
+    hn_new_stories = []
 
     # Buat cache status endpoint
     status = {
@@ -281,6 +380,10 @@ def index():
         "arxiv_hot": len(arxiv_hot_papers) > 0,
         "arxiv_rising": len(arxiv_rising_papers) > 0,
         "arxiv_new": len(arxiv_new_papers) > 0,
+        "hn_hot": len(hn_hot_stories) > 0,
+        "hn_rising": len(hn_rising_stories) > 0,
+        "hn_new": len(hn_new_stories) > 0,
+        "hn_insights": bool(hn_insights),
     }
     print(f"Data status: {status}")
 
@@ -300,6 +403,10 @@ def index():
         arxiv_hot_papers=arxiv_hot_papers,
         arxiv_rising_papers=arxiv_rising_papers,
         arxiv_new_papers=arxiv_new_papers,
+        hn_hot_stories=hn_hot_stories,
+        hn_rising_stories=hn_rising_stories,
+        hn_new_stories=hn_new_stories,
+        hn_insights=hn_insights,
     )
 
 
@@ -331,6 +438,10 @@ def cache_status():
             "arxiv_hot_papers": cache.has("arxiv_hot_papers"),
             "arxiv_rising_papers": cache.has("arxiv_rising_papers"),
             "arxiv_new_papers": cache.has("arxiv_new_papers"),
+            "hn_hot_stories": cache.has("hn_hot_stories"),
+            "hn_rising_stories": cache.has("hn_rising_stories"),
+            "hn_new_stories": cache.has("hn_new_stories"),
+            "hn_insights": cache.has("hn_insights"),
         }
         return jsonify(status)
     except Exception as e:
@@ -347,6 +458,47 @@ def refresh_cache():
         return "Cache refresh started in background"
     except Exception as e:
         return f"Error starting cache refresh: {e}"
+
+
+# API Endpoints untuk Hacker News
+@app.route("/api/hackernews/hot")
+def api_hot_hn_stories():
+    """Get hot stories from Hacker News"""
+    try:
+        return jsonify({"stories": cached_hn_hot_stories()})
+    except Exception as e:
+        print(f"Error in HN hot API: {e}")
+        return jsonify({"error": str(e), "stories": []})
+
+
+@app.route("/api/hackernews/rising")
+def api_rising_hn_stories():
+    """Get rising stories from Hacker News"""
+    try:
+        return jsonify({"stories": cached_hn_rising_stories()})
+    except Exception as e:
+        print(f"Error in HN rising API: {e}")
+        return jsonify({"error": str(e), "stories": []})
+
+
+@app.route("/api/hackernews/new")
+def api_new_hn_stories():
+    """Get new stories from Hacker News"""
+    try:
+        return jsonify({"stories": cached_hn_new_stories()})
+    except Exception as e:
+        print(f"Error in HN new API: {e}")
+        return jsonify({"error": str(e), "stories": []})
+
+
+@app.route("/api/hackernews/insights")
+def api_hn_insights():
+    """Get insights from Hacker News"""
+    try:
+        return jsonify({"insights": cached_hn_insights()})
+    except Exception as e:
+        print(f"Error in HN insights API: {e}")
+        return jsonify({"error": str(e), "insights": {}})
 
 
 if __name__ == "__main__":
