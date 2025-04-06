@@ -302,6 +302,36 @@
         {% endfor %}
       </div>
       {% endif %}
+      
+      {% if wiki_articles %}
+      <h2>Random Wikipedia Articles</h2>
+      <div class="grid-2-columns">
+        <div>
+          {% for article in wiki_articles[:5] %}
+          <div class="trend-item">
+            <h4>
+              <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+                {{ article.title }}
+              </a>
+            </h4>
+            <p>{{ article.summary }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        <div>
+          {% for article in wiki_articles[5:] %}
+          <div class="trend-item">
+            <h4>
+              <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+                {{ article.title }}
+              </a>
+            </h4>
+            <p>{{ article.summary }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
   </body>
 </html>
