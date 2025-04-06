@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trend Radar</title>
+  </head>
+  <body>
+    <h1>Trend Radar</h1>
+
+    {% if youtube_trends %}
+    <h2>YouTube Trends</h2>
+    <ul>
+      {% for video in youtube_trends %}
+      <li>
+        <img src="{{ video.thumbnail }}" alt="{{ video.title }}" />
+        <a
+          href="https://www.youtube.com/watch?v={{ video.id }}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ video.title }} >{{ video.titlr }}</a
+        >
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %} {% if google_top_news %}
+    <h2>Google Top News</h2>
+    {% for news in google_top_news %}
+    <ul>
+      <li>
+        <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+          {{ news.title }}</a
+        >
+      </li>
+    </ul>
+    {% endfor %} {% endif %}
+  </body>
+</html>
