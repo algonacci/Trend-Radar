@@ -28,9 +28,9 @@ def get_reddit_posts(subreddit_name="indonesia", category="hot", limit=10):
     """
     # Debug kredensial Reddit
     print(f"Reddit Credentials Check:")
-    print(f"CLIENT_ID: {'Set' if os.getenv('REDIT_CLIENT_ID') else 'Not Set'}")
-    print(f"CLIENT_SECRET: {'Set' if os.getenv('REDIT_SECRET') else 'Not Set'}")
-    print(f"USERNAME: {'Set' if os.getenv('REDIT_USERNAME') else 'Not Set'}")
+    print(f"CLIENT_ID: {'Set' if os.getenv('REDDIT_CLIENT_ID') else 'Not Set'}")
+    print(f"CLIENT_SECRET: {'Set' if os.getenv('REDDIT_SECRET') else 'Not Set'}")
+    print(f"USERNAME: {'Set' if os.getenv('REDDIT_USERNAME') else 'Not Set'}")
     # Mengecek cache
     cache_key = f"{subreddit_name}_{category}"
     current_time = time()
@@ -50,7 +50,7 @@ def get_reddit_posts(subreddit_name="indonesia", category="hot", limit=10):
         # Menggunakan Reddit API dengan read-only public access
         try:
             # Coba dengan kredensial dari .env jika tersedia
-            if os.getenv("REDIT_CLIENT_ID") and os.getenv("REDIT_SECRET"):
+            if os.getenv("REDDIT_CLIENT_ID") and os.getenv("REDDIT_SECRET"):
                 reddit = praw.Reddit(
                     client_id=os.getenv("REDDIT_CLIENT_ID"),
                     client_secret=os.getenv("REDDIT_SECRET"),

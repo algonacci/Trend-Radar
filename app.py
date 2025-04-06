@@ -16,6 +16,7 @@ from hacker_news import get_hot_hn_stories, get_rising_hn_stories, get_new_hn_st
 from reddit_post import get_reddit_indonesia_posts
 import threading
 import time
+import datetime
 from dotenv import load_dotenv
 
 # Memuat variabel environment dari file .env
@@ -288,6 +289,9 @@ background_thread.start()
 
 @app.route("/")
 def index():
+    # Get current year for the footer
+    current_year = datetime.datetime.now().year
+
     # Gunakan individual cached functions dengan fallback (tidak timeout)
     try:
         youtube_trends = cached_youtube_trends()
@@ -468,6 +472,7 @@ def index():
         reddit_hot_posts=reddit_hot_posts,
         reddit_new_posts=reddit_new_posts,
         reddit_top_posts=reddit_top_posts,
+        current_year=current_year,
     )
 
 
