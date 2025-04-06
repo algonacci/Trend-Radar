@@ -1,5 +1,6 @@
 import yfinance as yf
 
+
 def get_asia_and_indonesia_stock_exchange_info():
     market = yf.Market("ASIA")
     asia_market_data = market.summary

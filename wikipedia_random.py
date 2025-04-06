@@ -11,7 +11,7 @@ def get_random_wikipedia_articles(count=10):
         try:
             # Get a random article title
             title = wikipedia.random()
-            
+
             # Get a summary of the article
             try:
                 summary = wikipedia.summary(title, sentences=2)
@@ -24,21 +24,17 @@ def get_random_wikipedia_articles(count=10):
                     summary = "Summary not available"
             except Exception:
                 summary = "Summary not available"
-            
+
             # Get the URL
             url = wikipedia.page(title).url
-            
+
             # Create article object
-            article = {
-                "title": title,
-                "summary": summary,
-                "url": url
-            }
-            
+            article = {"title": title, "summary": summary, "url": url}
+
             articles.append(article)
         except Exception as e:
             # If any error occurs, just continue to the next article
             print(f"Error fetching Wikipedia article: {e}")
             continue
-            
+
     return articles
