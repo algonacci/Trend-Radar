@@ -3,67 +3,219 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Primary Meta Tags -->
     <title>Trend Radar</title>
+    <meta name="title" content="Trend Radar" />
+    <meta
+      name="description"
+      content="Trend Radar - Track trending content from mainstream media"
+    />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://trend-radar.ngodings.my.id/" />
+    <meta property="og:title" content="Trend Radar" />
+    <meta
+      property="og:description"
+      content="Trend Radar - Track trending content from mainstream media"
+    />
+    <meta
+      property="og:image"
+      content="https://trend-radar.ngodings.my.id/static/img/banner.png"
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https://trend-radar.ngodings.my.id/"
+    />
+    <meta property="twitter:title" content="Trend Radar" />
+    <meta
+      property="twitter:description"
+      content="Trend Radar - Track trending content from mainstream media"
+    />
+    <meta
+      property="twitter:image"
+      content="https://trend-radar.ngodings.my.id/static/img/banner.png"
+    />
+
+    <style>
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .grid-2-columns {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+
+      .youtube-item {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+      }
+
+      .youtube-item img {
+        width: 100%;
+        max-width: 320px;
+        height: auto;
+      }
+
+      .news-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .trend-item {
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .trend-item img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
-    <h1>Trend Radar</h1>
+    <div class="container">
+      <h1>Trend Radar</h1>
 
-    {% if youtube_trends %}
-    <h2>YouTube Trends</h2>
-    <ul>
-      {% for video in youtube_trends %}
-      <li>
-        <img src="{{ video.thumbnail }}" alt="{{ video.title }}" />
-        <a
-          href="https://www.youtube.com/watch?v={{ video.id }}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {{ video.title }} >{{ video.titlr }}</a
-        >
-      </li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% if google_top_news %}
-    <h2>Google Top News</h2>
-    {% for news in google_top_news %}
-    <ul>
-      <li>
-        <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
-          {{ news.title }}</a
-        >
-      </li>
-    </ul>
-    {% endfor %} {% endif %} {% if google_trends %}
-    <h2>Google Trends Indonesia</h2>
-    <ul>
-      {% for trend in google_trends.trends %}
-      <li>
-        <h3>{{ trend.title }}</h3>
-        {% if trend.traffic %}
-        <p>Traffic: {{ trend.traffic }}</p>
-        {% endif %} {% if trend.picture %}
-        <img src="{{ trend.picture }}" alt="{{ trend.title }}" width="200" />
-        {% if trend.picture_source %}
-        <small>Source: {{ trend.picture_source }}</small>
-        {% endif %} {% endif %} {% if trend.news_items %}
-        <h4>Related News:</h4>
-        <ul>
-          {% for news in trend.news_items %}
-          <li>
+      {% if youtube_trends %}
+      <h2>YouTube Trends</h2>
+      <div class="grid-2-columns">
+        <div>
+          {% for video in youtube_trends[:10] %}
+          <div class="youtube-item">
+            <img src="{{ video.thumbnail }}" alt="{{ video.title }}" />
+            <a
+              href="https://www.youtube.com/watch?v={{ video.id }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ video.title }}
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        <div>
+          {% for video in youtube_trends[10:] %}
+          <div class="youtube-item">
+            <img src="{{ video.thumbnail }}" alt="{{ video.title }}" />
+            <a
+              href="https://www.youtube.com/watch?v={{ video.id }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ video.title }}
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %} {% if google_top_news %}
+      <h2>Google Top News</h2>
+      <div class="grid-2-columns">
+        <div>
+          {% for news in google_top_news[:10] %}
+          <div class="news-item">
             <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
               {{ news.title }}
             </a>
-            {% if news.source %}
-            <small>({{ news.source }})</small>
-            {% endif %}
-          </li>
+          </div>
           {% endfor %}
-        </ul>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
+        </div>
+        <div>
+          {% for news in google_top_news[10:] %}
+          <div class="news-item">
+            <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+              {{ news.title }}
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %} {% if google_trends %}
+      <h2>Google Trends Indonesia</h2>
+      <div class="grid-2-columns">
+        <div>
+          {% for trend in google_trends.trends[:5] %}
+          <div class="trend-item">
+            <h3>{{ trend.title }}</h3>
+            {% if trend.traffic %}
+            <p>Traffic: {{ trend.traffic }}</p>
+            {% endif %} {% if trend.picture %}
+            <img src="{{ trend.picture }}" alt="{{ trend.title }}" />
+            {% if trend.picture_source %}
+            <small>Source: {{ trend.picture_source }}</small>
+            {% endif %} {% endif %} {% if trend.news_items %}
+            <h4>Related News:</h4>
+            <ul>
+              {% for news in trend.news_items %}
+              <li>
+                <a
+                  href="{{ news.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ news.title }}
+                </a>
+                {% if news.source %}
+                <small>({{ news.source }})</small>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div>
+          {% for trend in google_trends.trends[5:] %}
+          <div class="trend-item">
+            <h3>{{ trend.title }}</h3>
+            {% if trend.traffic %}
+            <p>Traffic: {{ trend.traffic }}</p>
+            {% endif %} {% if trend.picture %}
+            <img src="{{ trend.picture }}" alt="{{ trend.title }}" />
+            {% if trend.picture_source %}
+            <small>Source: {{ trend.picture_source }}</small>
+            {% endif %} {% endif %} {% if trend.news_items %}
+            <h4>Related News:</h4>
+            <ul>
+              {% for news in trend.news_items %}
+              <li>
+                <a
+                  href="{{ news.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ news.title }}
+                </a>
+                {% if news.source %}
+                <small>({{ news.source }})</small>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
   </body>
 </html>
