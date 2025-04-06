@@ -11,8 +11,10 @@ from huggingface_trends import (
     get_trending_spaces,
     get_daily_papers,
 )
+from arxiv_papers import get_trending_arxiv_papers
 import threading
 import time
+import os
 
 app = Flask(__name__)
 
@@ -132,6 +134,37 @@ def cached_huggingface_papers():
         return []
 
 
+# Cache ArXiv papers with different sorting methods
+@cache.cached(timeout=7200, key_prefix="arxiv_hot_papers")
+def cached_arxiv_hot_papers():
+    print("Fetching fresh ArXiv HOT papers")
+    try:
+        return get_trending_arxiv_papers(sort_method="hot", max_results=10)
+    except Exception as e:
+        print(f"Error fetching ArXiv hot papers: {e}")
+        return []
+
+
+@cache.cached(timeout=7200, key_prefix="arxiv_rising_papers")
+def cached_arxiv_rising_papers():
+    print("Fetching fresh ArXiv RISING papers")
+    try:
+        return get_trending_arxiv_papers(sort_method="rising", max_results=10)
+    except Exception as e:
+        print(f"Error fetching ArXiv rising papers: {e}")
+        return []
+
+
+@cache.cached(timeout=7200, key_prefix="arxiv_new_papers")
+def cached_arxiv_new_papers():
+    print("Fetching fresh ArXiv NEW papers")
+    try:
+        return get_trending_arxiv_papers(sort_method="new", max_results=10)
+    except Exception as e:
+        print(f"Error fetching ArXiv new papers: {e}")
+        return []
+
+
 # Thread untuk mengupdate cache di background
 def update_cache_in_background():
     while True:
@@ -148,6 +181,10 @@ def update_cache_in_background():
             cached_huggingface_datasets()
             cached_huggingface_spaces()
             cached_huggingface_papers()
+            # Update ArXiv papers cache
+            cached_arxiv_hot_papers()
+            cached_arxiv_rising_papers()
+            cached_arxiv_new_papers()
             print("Background thread: cache update complete")
         except Exception as e:
             print(f"Error in background cache update: {e}")
@@ -214,6 +251,22 @@ def index():
     except Exception:
         huggingface_papers = []
 
+    # Ambil ArXiv papers dengan berbagai algoritma scoring
+    try:
+        arxiv_hot_papers = cached_arxiv_hot_papers()
+    except Exception:
+        arxiv_hot_papers = []
+
+    try:
+        arxiv_rising_papers = cached_arxiv_rising_papers()
+    except Exception:
+        arxiv_rising_papers = []
+
+    try:
+        arxiv_new_papers = cached_arxiv_new_papers()
+    except Exception:
+        arxiv_new_papers = []
+
     # Buat cache status endpoint
     status = {
         "youtube": len(youtube_trends) > 0,
@@ -225,6 +278,9 @@ def index():
         "huggingface_datasets": len(huggingface_datasets) > 0,
         "huggingface_spaces": len(huggingface_spaces) > 0,
         "huggingface_papers": len(huggingface_papers) > 0,
+        "arxiv_hot": len(arxiv_hot_papers) > 0,
+        "arxiv_rising": len(arxiv_rising_papers) > 0,
+        "arxiv_new": len(arxiv_new_papers) > 0,
     }
     print(f"Data status: {status}")
 
@@ -241,6 +297,9 @@ def index():
         huggingface_datasets=huggingface_datasets,
         huggingface_spaces=huggingface_spaces,
         huggingface_papers=huggingface_papers,
+        arxiv_hot_papers=arxiv_hot_papers,
+        arxiv_rising_papers=arxiv_rising_papers,
+        arxiv_new_papers=arxiv_new_papers,
     )
 
 
@@ -269,6 +328,9 @@ def cache_status():
             "huggingface_datasets": cache.has("huggingface_datasets"),
             "huggingface_spaces": cache.has("huggingface_spaces"),
             "huggingface_papers": cache.has("huggingface_papers"),
+            "arxiv_hot_papers": cache.has("arxiv_hot_papers"),
+            "arxiv_rising_papers": cache.has("arxiv_rising_papers"),
+            "arxiv_new_papers": cache.has("arxiv_new_papers"),
         }
         return jsonify(status)
     except Exception as e:
