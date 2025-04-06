@@ -13,9 +13,13 @@ from huggingface_trends import (
 )
 from arxiv_papers import get_trending_arxiv_papers
 from hacker_news import get_hot_hn_stories, get_rising_hn_stories, get_new_hn_stories, get_hn_insights, format_story
+from reddit_post import get_reddit_indonesia_posts
 import threading
 import time
-import os
+from dotenv import load_dotenv
+
+# Memuat variabel environment dari file .env
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -210,6 +214,37 @@ def cached_hn_insights():
         return {}
 
 
+# Cache Reddit posts untuk r/indonesia dengan berbagai kategori
+@cache.cached(timeout=1800, key_prefix="reddit_hot_posts")
+def cached_reddit_hot_posts():
+    print("Fetching fresh Reddit HOT posts from r/indonesia")
+    try:
+        return get_reddit_indonesia_posts(category="hot", limit=10)
+    except Exception as e:
+        print(f"Error fetching Reddit hot posts: {e}")
+        return []
+
+
+@cache.cached(timeout=1800, key_prefix="reddit_new_posts")
+def cached_reddit_new_posts():
+    print("Fetching fresh Reddit NEW posts from r/indonesia")
+    try:
+        return get_reddit_indonesia_posts(category="new", limit=10)
+    except Exception as e:
+        print(f"Error fetching Reddit new posts: {e}")
+        return []
+
+
+@cache.cached(timeout=1800, key_prefix="reddit_top_posts")
+def cached_reddit_top_posts():
+    print("Fetching fresh Reddit TOP posts from r/indonesia")
+    try:
+        return get_reddit_indonesia_posts(category="top", limit=10)
+    except Exception as e:
+        print(f"Error fetching Reddit top posts: {e}")
+        return []
+
+
 # Thread untuk mengupdate cache di background
 def update_cache_in_background():
     while True:
@@ -235,6 +270,10 @@ def update_cache_in_background():
             cached_hn_rising_stories()
             cached_hn_new_stories()
             cached_hn_insights()
+            # Update Reddit cache
+            cached_reddit_hot_posts()
+            cached_reddit_new_posts()
+            cached_reddit_top_posts()
             print("Background thread: cache update complete")
         except Exception as e:
             print(f"Error in background cache update: {e}")
@@ -336,6 +375,22 @@ def index():
     # Menghapus insights karena sudah tidak digunakan
     hn_insights = {}
     
+    # Ambil data Reddit dengan fallback
+    try:
+        reddit_hot_posts = cached_reddit_hot_posts()
+    except Exception:
+        reddit_hot_posts = []
+        
+    try:
+        reddit_new_posts = cached_reddit_new_posts()
+    except Exception:
+        reddit_new_posts = []
+        
+    try:
+        reddit_top_posts = cached_reddit_top_posts()
+    except Exception:
+        reddit_top_posts = []
+    
     # Menggabungkan semua cerita Hacker News dan menghapus duplikat berdasarkan judul
     all_hn_stories = []
     seen_titles = set()
@@ -384,6 +439,9 @@ def index():
         "hn_rising": len(hn_rising_stories) > 0,
         "hn_new": len(hn_new_stories) > 0,
         "hn_insights": bool(hn_insights),
+        "reddit_hot": len(reddit_hot_posts) > 0,
+        "reddit_new": len(reddit_new_posts) > 0,
+        "reddit_top": len(reddit_top_posts) > 0,
     }
     print(f"Data status: {status}")
 
@@ -407,6 +465,9 @@ def index():
         hn_rising_stories=hn_rising_stories,
         hn_new_stories=hn_new_stories,
         hn_insights=hn_insights,
+        reddit_hot_posts=reddit_hot_posts,
+        reddit_new_posts=reddit_new_posts,
+        reddit_top_posts=reddit_top_posts,
     )
 
 

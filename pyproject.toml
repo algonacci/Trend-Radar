@@ -18,4 +18,6 @@ dependencies = [
     "nltk>=3.9.1",
     "feedparser>=6.0.11",
     "beautifulsoup4>=4.13.3",
+    "praw>=7.8.1",
+    "pandas>=2.2.3",
 ]
