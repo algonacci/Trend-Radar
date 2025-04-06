@@ -6,6 +6,7 @@ gn = gnews.GNews(
     max_results=20,
 )
 
+
 def get_google_top_news():
     articles = gn.get_top_news()
     results = []
@@ -15,7 +16,7 @@ def get_google_top_news():
             "url": article.get("url", ""),
             "publisher": article.get("publisher", {}).get("title", ""),
             "published_date": article.get("published date", ""),
-            "description": article.get("description", "")
+            "description": article.get("description", ""),
         }
         results.append(formatted_article)
     return results

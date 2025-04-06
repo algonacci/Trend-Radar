@@ -34,6 +34,36 @@
         >
       </li>
     </ul>
-    {% endfor %} {% endif %}
+    {% endfor %} {% endif %} {% if google_trends %}
+    <h2>Google Trends Indonesia</h2>
+    <ul>
+      {% for trend in google_trends.trends %}
+      <li>
+        <h3>{{ trend.title }}</h3>
+        {% if trend.traffic %}
+        <p>Traffic: {{ trend.traffic }}</p>
+        {% endif %} {% if trend.picture %}
+        <img src="{{ trend.picture }}" alt="{{ trend.title }}" width="200" />
+        {% if trend.picture_source %}
+        <small>Source: {{ trend.picture_source }}</small>
+        {% endif %} {% endif %} {% if trend.news_items %}
+        <h4>Related News:</h4>
+        <ul>
+          {% for news in trend.news_items %}
+          <li>
+            <a href="{{ news.url }}" target="_blank" rel="noopener noreferrer">
+              {{ news.title }}
+            </a>
+            {% if news.source %}
+            <small>({{ news.source }})</small>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
   </body>
 </html>
