@@ -567,5 +567,201 @@ def api_hn_insights():
         return jsonify({"error": str(e), "insights": {}})
 
 
+# API Endpoint untuk semua data index
+@app.route("/api/index")
+def api_index():
+    """Get all index data in JSON format"""
+    try:
+        # Get current year for the footer
+        current_year = datetime.datetime.now().year
+
+        # Gunakan individual cached functions dengan fallback (tidak timeout)
+        try:
+            youtube_trends = cached_youtube_trends()
+        except Exception:
+            youtube_trends = []
+
+        try:
+            google_top_news = cached_google_top_news()
+        except Exception:
+            google_top_news = []
+
+        try:
+            topic_news = cached_topic_news()
+        except Exception:
+            topic_news = []
+
+        try:
+            google_trends = cached_google_trends()
+        except Exception:
+            google_trends = []
+
+        try:
+            asia_markets, ihsg_data = cached_asia_markets()
+        except Exception:
+            asia_markets, ihsg_data = [], {}
+
+        try:
+            wiki_articles = cached_wiki_articles()
+        except Exception:
+            wiki_articles = []
+
+        # Ambil data HuggingFace secara individual dengan fallback
+        try:
+            huggingface_collections = cached_huggingface_collections()
+        except Exception:
+            huggingface_collections = []
+
+        try:
+            huggingface_datasets = cached_huggingface_datasets()
+        except Exception:
+            huggingface_datasets = []
+
+        try:
+            huggingface_spaces = cached_huggingface_spaces()
+        except Exception:
+            huggingface_spaces = []
+
+        try:
+            huggingface_papers = cached_huggingface_papers()
+        except Exception:
+            huggingface_papers = []
+
+        # Ambil ArXiv papers dengan berbagai algoritma scoring
+        try:
+            arxiv_hot_papers = cached_arxiv_hot_papers()
+        except Exception:
+            arxiv_hot_papers = []
+
+        try:
+            arxiv_rising_papers = cached_arxiv_rising_papers()
+        except Exception:
+            arxiv_rising_papers = []
+
+        try:
+            arxiv_new_papers = cached_arxiv_new_papers()
+        except Exception:
+            arxiv_new_papers = []
+
+        # Ambil data Hacker News dengan fallback
+        try:
+            hn_hot_stories = cached_hn_hot_stories()
+        except Exception:
+            hn_hot_stories = []
+
+        try:
+            hn_rising_stories = cached_hn_rising_stories()
+        except Exception:
+            hn_rising_stories = []
+
+        try:
+            hn_new_stories = cached_hn_new_stories()
+        except Exception:
+            hn_new_stories = []
+
+        # Menghapus insights karena sudah tidak digunakan
+        hn_insights = {}
+
+        # Ambil data Reddit dengan fallback
+        try:
+            reddit_hot_posts = cached_reddit_hot_posts()
+        except Exception:
+            reddit_hot_posts = []
+
+        try:
+            reddit_new_posts = cached_reddit_new_posts()
+        except Exception:
+            reddit_new_posts = []
+
+        try:
+            reddit_top_posts = cached_reddit_top_posts()
+        except Exception:
+            reddit_top_posts = []
+
+        # Menggabungkan semua cerita Hacker News dan menghapus duplikat berdasarkan judul
+        all_hn_stories = []
+        seen_titles = set()
+
+        # Fungsi untuk tambahkan cerita ke daftar gabungan jika judulnya belum ada
+        def add_unique_story(story):
+            title = story.get('title', '')
+            if title and title not in seen_titles:
+                seen_titles.add(title)
+                all_hn_stories.append(story)
+
+        # Tambahkan cerita dari masing-masing kategori
+        for story in hn_hot_stories:
+            add_unique_story(story)
+
+        for story in hn_rising_stories:
+            add_unique_story(story)
+
+        for story in hn_new_stories:
+            add_unique_story(story)
+
+        # Urutkan berdasarkan skor (dari tertinggi ke terendah) dan ambil 16 teratas
+        all_hn_stories.sort(key=lambda x: x.get('score', 0), reverse=True)
+        all_hn_stories = all_hn_stories[:16]
+
+        # Hapus array terpisah karena sudah digabungkan
+        hn_hot_stories = all_hn_stories
+        hn_rising_stories = []
+        hn_new_stories = []
+
+        # Buat cache status endpoint
+        status = {
+            "youtube": len(youtube_trends) > 0,
+            "google_news": len(google_top_news) > 0,
+            "topic_news": len(topic_news) > 0,
+            "google_trends": len(google_trends) > 0,
+            "wiki": len(wiki_articles) > 0,
+            "huggingface_collections": len(huggingface_collections) > 0,
+            "huggingface_datasets": len(huggingface_datasets) > 0,
+            "huggingface_spaces": len(huggingface_spaces) > 0,
+            "huggingface_papers": len(huggingface_papers) > 0,
+            "arxiv_hot": len(arxiv_hot_papers) > 0,
+            "arxiv_rising": len(arxiv_rising_papers) > 0,
+            "arxiv_new": len(arxiv_new_papers) > 0,
+            "hn_hot": len(hn_hot_stories) > 0,
+            "hn_rising": len(hn_rising_stories) > 0,
+            "hn_new": len(hn_new_stories) > 0,
+            "hn_insights": bool(hn_insights),
+            "reddit_hot": len(reddit_hot_posts) > 0,
+            "reddit_new": len(reddit_new_posts) > 0,
+            "reddit_top": len(reddit_top_posts) > 0,
+        }
+
+        # Return all data in JSON format
+        return jsonify({
+            "current_year": current_year,
+            "youtube_trends": youtube_trends,
+            "google_top_news": google_top_news,
+            "topic_news": topic_news,
+            "google_trends": google_trends,
+            "asia_markets": asia_markets,
+            "ihsg_data": ihsg_data,
+            "wiki_articles": wiki_articles,
+            "huggingface_collections": huggingface_collections,
+            "huggingface_datasets": huggingface_datasets,
+            "huggingface_spaces": huggingface_spaces,
+            "huggingface_papers": huggingface_papers,
+            "arxiv_hot_papers": arxiv_hot_papers,
+            "arxiv_rising_papers": arxiv_rising_papers,
+            "arxiv_new_papers": arxiv_new_papers,
+            "hn_hot_stories": hn_hot_stories,
+            "hn_rising_stories": hn_rising_stories,
+            "hn_new_stories": hn_new_stories,
+            "hn_insights": hn_insights,
+            "reddit_hot_posts": reddit_hot_posts,
+            "reddit_new_posts": reddit_new_posts,
+            "reddit_top_posts": reddit_top_posts,
+            "status": status
+        })
+
+    except Exception as e:
+        print(f"Error in index API: {e}")
+        return jsonify({"error": str(e)})
+
+
 if __name__ == "__main__":
     app.run()
